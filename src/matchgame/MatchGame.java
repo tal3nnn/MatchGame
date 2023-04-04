@@ -13,23 +13,23 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 
-
 /**
  * Project: MatchGame
- * @author tsiga
+ * @author t
  * Date: 02/21/2023
- * Description: Cat Matching Game
+ * Description: Cat-themed matching game.
  */
 public class MatchGame {
     private static final int CARDS = 20;
-    private static final String MATCH = "match";
-    private static final String OPENED = "opened";
+    private static final String MATCH = "match"; // State that a match was found
+    private static final String OPENED = "opened"; // State that a card was flipped
     private final Random random = new Random();
     private final ImageIcon cardBack = new ImageIcon("resources/images/card_back.png");
 
@@ -47,7 +47,12 @@ public class MatchGame {
         new JLabel("MATCHING GAME"),
         new JLabel("CLICK TWO CARDS TO SEE IF THEY MATCH"),
         new JLabel("SCORE: 0")
-    };
+    }; // Labels are created like this to be called in an enhanced for loop — better for a consistent GUI
+
+    // Redefine variables for clarity
+    private final JLabel titleLabel = labels[0];
+    private final JLabel descLabel = labels[1];
+    private final JLabel scoreLabel = labels[2];
 
     private final AtomicInteger count = new AtomicInteger();
     private final AtomicReference<JButton> button1 = new AtomicReference<>();
@@ -66,33 +71,33 @@ public class MatchGame {
     }
 
     public void init() {
-        play.addActionListener(e -> play());
+        play.addActionListener(e -> playAction());
         play.setFocusPainted(false);
         play.setContentAreaFilled(false);
         play.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         play.setForeground(Color.BLACK);
-        play.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 20));
+        play.setFont(new Font("Segoe UI", Font.BOLD, 20));
 
-        guessAgain.addActionListener(e -> guessAgain());
+        guessAgain.addActionListener(e -> guessAgainAction());
         guessAgain.setFocusPainted(false);
         guessAgain.setContentAreaFilled(false);
         guessAgain.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         guessAgain.setForeground(Color.BLACK);
-        guessAgain.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 20));
+        guessAgain.setFont(new Font("Segoe UI", Font.BOLD, 20));
 
         exit.addActionListener(e -> System.exit(0));
         exit.setFocusPainted(false);
         exit.setContentAreaFilled(false);
         exit.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         exit.setForeground(Color.BLACK);
-        exit.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 20));
+        exit.setFont(new Font("Segoe UI", Font.BOLD, 20));
 
-        for (JLabel label : labels) {
-            label.setForeground(Color.BLACK);
-            label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 20));
-            label.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
-            label.setHorizontalAlignment(SwingConstants.CENTER);
-            label.setVerticalAlignment(SwingConstants.CENTER);
+        for (JLabel lbl : labels) {
+            lbl.setForeground(Color.BLACK);
+            lbl.setFont(new Font("Segoe UI", Font.BOLD, 20));
+            lbl.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+            lbl.setHorizontalAlignment(SwingConstants.CENTER);
+            lbl.setVerticalAlignment(SwingConstants.CENTER);
         }
 
         board.setLayout(new GridLayout(4, 4));
@@ -102,7 +107,7 @@ public class MatchGame {
         sidebar.setLayout(new GridLayout(4, 1));
         sidebar.setBackground(Color.PINK);
         sidebar.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        sidebar.add(labels[2]);
+        sidebar.add(scoreLabel);
         sidebar.add(play);
         sidebar.add(guessAgain);
         sidebar.add(exit);
@@ -110,19 +115,19 @@ public class MatchGame {
         bottom.setLayout(new GridLayout(1, 1));
         bottom.setBackground(Color.PINK);
         bottom.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        bottom.add(labels[1]);
+        bottom.add(descLabel);
 
         title.setLayout(new GridLayout(1, 1));
         title.setBackground(Color.PINK);
         title.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        title.add(labels[0]);
+        title.add(titleLabel);
 
         frame.add(board, BorderLayout.CENTER);
         frame.add(sidebar, BorderLayout.EAST);
         frame.add(bottom, BorderLayout.SOUTH);
         frame.add(title, BorderLayout.NORTH);
         frame.setBackground(Color.PINK);
-        frame.setTitle("Match Game");
+        frame.setTitle("Cat Matching Game");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setResizable(false);
         frame.setVisible(true);
@@ -133,6 +138,7 @@ public class MatchGame {
         button1.set(null);
         button2.set(null);
         buttons = new JButton[CARDS];
+
         for (int i = 0; i < CARDS; i++) {
             buttons[i] = new JButton(cardBack);
             buttons[i].setPreferredSize(new Dimension(100, 100));
@@ -143,6 +149,7 @@ public class MatchGame {
             final int j = i;
             buttons[i].addActionListener(e -> buttonAction(e, j));
         }
+
         for (int i = 0; i < CARDS; i++) {
             int randomIndex = i + random.nextInt(CARDS - i);
             JButton temp = buttons[i];
@@ -153,24 +160,33 @@ public class MatchGame {
         frame.pack();
     }
 
-    private void play() {
+    /**
+     * Play action method.
+     */
+    private void playAction() {
         active = true;
         score = 0;
         board.removeAll();
-        labels[2].setText("SCORE: " + score);
+        descLabel.setText("CLICK TWO CARDS TO SEE IF THEY MATCH");
+        scoreLabel.setText("SCORE: " + score);
         count.set(0);
         initButtons();
     }
 
-    private void guessAgain() {
+    /**
+     * Guess Again action method.
+     */
+    private void guessAgainAction() {
         if (!active) return;
         if (button1.get() == null || button2.get() == null) return;
-        for (JButton button : buttons) {
-            if (!button.getName().equals(MATCH)) {
-                button.setIcon(cardBack);
-                button.setEnabled(true);
+
+        for (JButton btn : buttons) {
+            if (!btn.getName().equals(MATCH)) {
+                btn.setIcon(cardBack);
+                btn.setEnabled(true);
             }
         }
+
         if (!button1.get().getName().equals(MATCH) && !button2.get().getName().equals(MATCH)) {
             button1.get().setName(name1);
             button2.get().setName(name2);
@@ -183,42 +199,64 @@ public class MatchGame {
     private void buttonAction(ActionEvent e, int j) {
         if (!active) return;
         JButton button = (JButton) e.getSource();
-        if (j < CARDS / 2) button.setIcon(new ImageIcon("resources/images/" + j + ".png"));
-        else button.setIcon(new ImageIcon("resources/images/" + (j - CARDS / 2) + ".png"));
+        if (j < CARDS / 2)
+            button.setIcon(new ImageIcon("resources/images/" + j + ".png"));
+        else 
+            button.setIcon(new ImageIcon("resources/images/" + (j - CARDS / 2) + ".png"));
+
         button.setDisabledIcon(button.getIcon());
         button.setEnabled(false);
         checkWin(button);
     }
 
+    /**
+     * Checks if the player has won the game and blits the win screen.
+     * @param button 
+     */
     private void checkWin(JButton button) {
         count.getAndIncrement();
         if (count.get() == 1) {
             button1.set(button);
             name1 = button1.get().getName();
             button1.get().setName(OPENED);
+
         } else if (count.get() == 2) {
             button2.set(button);
             name2 = button2.get().getName();
             button2.get().setName(OPENED);
-            for (JButton b : buttons) {
-                if (!b.getName().equals(OPENED) && !b.getName().equals(MATCH)) {
-                    b.setDisabledIcon(cardBack);
-                    b.setEnabled(false);
+
+            // Disables all cards that are not OPENED or MATCHED until "Guess Again" is pressed
+            for (JButton btn : buttons) {
+                if (!btn.getName().equals(OPENED) && !btn.getName().equals(MATCH)) {
+                    btn.setDisabledIcon(cardBack);
+                    btn.setEnabled(false);
                 }
             }
+
+            // If selection1 icon is the same as selection2 icon
             if (button1.get().getIcon().toString().equals(button2.get().getIcon().toString())) {
                 button1.get().setName(MATCH);
                 button1.get().setEnabled(false);
                 button2.get().setName(MATCH);
                 button2.get().setEnabled(false);
                 score++;
-                labels[2].setText("SCORE: " + score);
+                scoreLabel.setText("SCORE: " + score);
+
+                // When player has won the game
                 if (score == CARDS / 2) {
-                    JOptionPane.showMessageDialog(frame, null, "YOU WIN", JOptionPane.INFORMATION_MESSAGE, new ImageIcon("resources/images/party.png"));
+                    descLabel.setText("CONGRATULATIONS!");
+
+                    // Create the win screen
+                    final JOptionPane winPane = new JOptionPane(new JLabel(new ImageIcon("resources/images/party.png")));
+                    JDialog dialog = winPane.createDialog("YOU WIN!");
+                    dialog.setModal(true);
+                    dialog.setVisible(true);
+
+                    // Resets the game
                     score = 0;
-                    play();
+                    playAction();
                 }
-                guessAgain();
+                guessAgainAction();
             }
             count.set(0);
         }
